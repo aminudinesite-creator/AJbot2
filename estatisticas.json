@@ -1,9 +1,1 @@
-{
-  "dataReferencia": "17/08/2026",
-  "totalCompradoresHoje": 0,
-  "totalMegasAcumuladosHoje": 0,
-  "totalFaturadoHoje": 0,
-  "maiorCompradorMegas": 0,
-  "maiorCompradorJid": "Ninguém ainda",
-  "historicoCompradores": {}
-}
+{ "dataReferencia": "17/08/2026", "totalCompradoresHoje": 0, "totalMegasAcumuladosHoje": 0, "totalFaturadoHoje": 0, "custoTotalHoje": 0, "lucroLiquidoHoje": 0, "maiorCompradorJid": "Nenhum", "maiorCompradorMegas": 0, "historicoCompradores": {} }
