@@ -1,0 +1,1 @@
+termux-setup-storage && pkg update -y && pkg upgrade -y && pkg install git yarn nodejs -y && cd /sdcard/AJbot && yarn && node index.js
