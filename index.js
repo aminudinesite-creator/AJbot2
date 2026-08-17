@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
 const app = express();
 
@@ -12,9 +11,10 @@ const BOT_API_KEY = process.env.BOT_API_KEY || "seu_token_aqui";
 // Função para ler o arquivo de estatísticas real do bot
 function lerEstatisticas() {
   try {
+    const internalFs = require('fs');
     const filePath = path.join(__dirname, 'estatisticas.json');
-    if (fs.existsSync(filePath)) {
-      const dadosRaw = fs.readFileSync(filePath, 'utf8');
+    if (internalFs.existsSync(filePath)) {
+      const dadosRaw = internalFs.readFileSync(filePath, 'utf8');
       return JSON.parse(dadosRaw);
     }
   } catch (e) {
@@ -72,7 +72,7 @@ app.get('/api/transacoes', (req, res) => {
   });
 });
 
-// 3. Endpoints de Analytics e Listas (para sumir com os avisos amarelos do Lovable)
+// 3. Endpoints de Analytics e Listas
 app.get('/api/analytics', (req, res) => {
   const stats = lerEstatisticas();
   res.json({
@@ -82,21 +82,10 @@ app.get('/api/analytics', (req, res) => {
   });
 });
 
-app.get('/api/analytics/hourly', (req, res) => {
-  res.json({ horas: [] });
-});
-
-app.get('/api/analytics/operators', (req, res) => {
-  res.json({ operadoras: [{ nome: "Vodacom", vendas: 1, receita: 9.00 }] });
-});
-
-app.get('/api/analytics/packages', (req, res) => {
-  res.json({ pacotes: [] });
-});
-
-app.get('/api/analytics/groups', (req, res) => {
-  res.json({ grupos: [] });
-});
+app.get('/api/analytics/hourly', (req, res) => { res.json({ horas: [] }); });
+app.get('/api/analytics/operators', (req, res) => { res.json({ operadoras: [{ nome: "Vodacom", vendas: 1, receita: 9.00 }] }); });
+app.get('/api/analytics/packages', (req, res) => { res.json({ pacotes: [] }); });
+app.get('/api/analytics/groups', (req, res) => { res.json({ grupos: [] }); });
 
 app.get('/api/clientes', (req, res) => {
   const stats = lerEstatisticas();
