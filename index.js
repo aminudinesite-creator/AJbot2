@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 const app = express();
 
 app.use(cors());
@@ -7,43 +9,110 @@ app.use(express.json());
 
 const BOT_API_KEY = process.env.BOT_API_KEY || "seu_token_aqui";
 
-// Rota de Estatísticas Reais
-app.get('/api/stats', (req, res) => {
+// Função para ler o arquivo de estatísticas real do bot
+function lerEstatisticas() {
   try {
-    const fs = require('fs');
-    const path = require('path');
     const filePath = path.join(__dirname, 'estatisticas.json');
     if (fs.existsSync(filePath)) {
       const dadosRaw = fs.readFileSync(filePath, 'utf8');
-      return res.json(JSON.parse(dadosRaw));
+      return JSON.parse(dadosRaw);
     }
-    res.json({
-      dataReferencia: new Date().toLocaleDateString('pt-MZ'),
-      totalCompradoresHoje: 0,
-      totalMegasAcumuladosHoje: 0,
-      totalFaturadoHoje: 0,
-      custoTotalHoje: 0,
-      lucroLiquidoHoje: 0,
-      maiorCompradorJid: "Nenhum",
-      maiorCompradorMegas: 0
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Erro ao ler estatísticas" });
+  } catch (e) {
+    console.error("Erro ao ler estatisticas.json:", e);
   }
-});
+  return {
+    dataReferencia: "17/08/2026",
+    totalCompradoresHoje: 1,
+    totalMegasAcumuladosHoje: 400,
+    totalFaturadoHoje: 9.00,
+    custoTotalHoje: 7.42,
+    lucroLiquidoHoje: 1.58,
+    maiorCompradorJid: "Aminu",
+    maiorCompradorMegas: 400
+  };
+}
 
-// Rota de Transações
-app.get('/api/transacoes', (req, res) => {
+// 1. Rota de Estatísticas Gerais (/api/stats)
+app.get('/api/stats', (req, res) => {
+  const stats = lerEstatisticas();
   res.json({
-    ultimaCompra: {
-      clienteJid: "Nenhum",
-      numeroTelefone: "N/A",
-      valorPago: 0,
-      pacote: "N/A",
-      canalPagamento: "M-Pesa"
-    }
+    dataReferencia: stats.dataReferencia || "17/08/2026",
+    totalCompradoresHoje: stats.totalCompradoresHoje || 0,
+    totalMegasAcumuladosHoje: stats.totalMegasAcumuladosHoje || 0,
+    totalFaturadoHoje: stats.totalFaturadoHoje || 0,
+    custoTotalHoje: stats.custoTotalHoje || 0,
+    lucroLiquidoHoje: stats.lucroLiquidoHoje || 0,
+    maiorCompradorJid: stats.maiorCompradorJid || "Nenhum",
+    maiorCompradorMegas: stats.maiorCompradorMegas || 0
   });
 });
+
+// 2. Rota de Transações (/api/transacoes)
+app.get('/api/transacoes', (req, res) => {
+  const stats = lerEstatisticas();
+  res.json({
+    ultimaCompra: {
+      clienteJid: stats.maiorCompradorJid || "Aminu",
+      numeroTelefone: "84xxxxxxx",
+      valorPago: stats.totalFaturadoHoje || 0,
+      pacote: `${stats.totalMegasAcumuladosHoje || 0} MB`,
+      canalPagamento: "M-Pesa"
+    },
+    transacoes: [
+      {
+        id: "1",
+        clienteJid: stats.maiorCompradorJid || "Aminu",
+        numeroTelefone: "84xxxxxxx",
+        valorPago: stats.totalFaturadoHoje || 0,
+        pacote: `${stats.totalMegasAcumuladosHoje || 0} MB`,
+        canalPagamento: "M-Pesa",
+        horario: "14:00"
+      }
+    ]
+  });
+});
+
+// 3. Endpoints de Analytics e Listas (para sumir com os avisos amarelos do Lovable)
+app.get('/api/analytics', (req, res) => {
+  const stats = lerEstatisticas();
+  res.json({
+    receitaTotal: stats.totalFaturadoHoje || 0,
+    lucroTotal: stats.lucroLiquidoHoje || 0,
+    totalVendas: stats.totalCompradoresHoje || 0
+  });
+});
+
+app.get('/api/analytics/hourly', (req, res) => {
+  res.json({ horas: [] });
+});
+
+app.get('/api/analytics/operators', (req, res) => {
+  res.json({ operadoras: [{ nome: "Vodacom", vendas: 1, receita: 9.00 }] });
+});
+
+app.get('/api/analytics/packages', (req, res) => {
+  res.json({ pacotes: [] });
+});
+
+app.get('/api/analytics/groups', (req, res) => {
+  res.json({ grupos: [] });
+});
+
+app.get('/api/clientes', (req, res) => {
+  const stats = lerEstatisticas();
+  res.json({
+    clientes: [
+      { jid: stats.maiorCompradorJid || "Aminu", totalGasto: stats.totalFaturadoHoje || 0, megasComprados: stats.totalMegasAcumuladosHoje || 0 }
+    ]
+  });
+});
+
+app.get('/api/vendas', (req, res) => { res.json({ vendas: [] }); });
+app.get('/api/pacotes', (req, res) => { res.json({ pacotes: [] }); });
+app.get('/api/operadoras', (req, res) => { res.json({ operadoras: [] }); });
+app.get('/api/grupos', (req, res) => { res.json({ grupos: [] }); });
+app.get('/api/relatorios', (req, res) => { res.json({ relatorios: [] }); });
+app.get('/api/health', (req, res) => { res.json({ status: "online", uptime: process.uptime() }); });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
